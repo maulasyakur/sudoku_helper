@@ -6,23 +6,24 @@ def main():
         print("invalid input")
         return 1
 
+    # open file
     finput = open(argv[1], "r")
     foutput = open(argv[2], "w")
 
     # load input file into a list called board
     board = load_finput(finput)
 
-    #clone the board to another board that will be inserted possible numbers for empty cells
+    # clone the board to another board that will later be inserted with all possible numbers for every empty cells
     side_board = clone_board(board)
 
-    # put all possible number for empty (0) cells in a new board called side_board
+    # put all possible number for every empty cells
     side_board = insert_possible_num(board, side_board)
     
     # use the hidden single technique to solve the cells
     steps = 0
-    board, steps = hidden_single(board, side_board, steps, foutput)
+    hidden_single(board, side_board, steps, foutput)
 
-
+    # close file
     finput.close()
     foutput.close()
 
@@ -42,10 +43,11 @@ def load_finput(finput):
         board.append(row)
     return board
 
+# clone board to make side board and temporary board
 def clone_board(board):
     side_board = []
     for row in board:
-        side_board.append(row[:])  # Copy each row to create a new board
+        side_board.append(row[:])
     return side_board
 
 # put all possible number in a list according to the cell's row, column, and block
@@ -53,16 +55,19 @@ def insert_possible_num(board, side_board):
     for row in range(9):
         for col in range(9):
             if board[row][col] == 0:
+                # list of numbers used in the row
                 row_val = []
                 for val in board[row]:
                     if val != 0:
                         row_val.append(val)
                 
+                #list of numbers used in the column
                 col_val = []
                 for i in range(9):
                     if board[i][col] != 0:
                         col_val.append(board[i][col])
                 
+                # list of numbers used in the block
                 block_row, block_col = 3 * (row // 3), 3 * (col // 3)
                 block_val = []
                 for i in range(3):
@@ -70,6 +75,7 @@ def insert_possible_num(board, side_board):
                         if board[block_row + i][block_col + j] != 0:
                             block_val.append(board[block_row + i][block_col + j])
                 
+                # possible numbers = numbers one to 9 - used numbers
                 used_val = row_val + col_val + block_val
                 used_val = [i for n, i in enumerate(used_val) if i not in used_val[:n]]
                 numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -107,12 +113,17 @@ def hidden_single(board, side_board, steps, foutput):
                     side_board[row][col] = side_board[row][col][0]
                     board[row][col] = side_board[row][col]
                     print_table(steps, board, row, col, foutput)
-    side_board = insert_possible_num(board, side_board)
-    if compare_side_board(side_board, temp_board) == False:
-        hidden_single(board, side_board, steps, foutput)
 
-    return board, steps
+                    # update the side board after solving a cell
+                    side_board = insert_possible_num(board, side_board)
+    
+                    # compare the previous board with the new updated board
+                    if compare_side_board(side_board, temp_board) == False:
+                        hidden_single(board, side_board, steps, foutput)
 
+    return 0
+
+# print table into output file
 def print_table(steps, board, row, col, foutput):
     heading = ["Step " + str(steps) + " - " + str(board[row][col]) + " @ R" + str(row + 1) + "C" + str(col + 1)]
     strips = ["-"*18]
