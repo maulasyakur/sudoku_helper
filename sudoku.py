@@ -49,23 +49,26 @@ def insert_possible_num(board, side_board):
         for col in range(9):
             if board[row][col] == 0:
                 # list of numbers used in the row
-                row_val = [val for val in board[row] if val != 0]
+                row_val = [val 
+                           for val in board[row]]
                 
                 #list of numbers used in the column
-                col_val = [board[i][col] for i in range(9) if board[i][col] != 0]
+                col_val = [board[i][col] 
+                           for i in range(9)]
                 
                 # list of numbers used in the block
                 block_row, block_col = 3 * (row // 3), 3 * (col // 3)
-                block_val = [board[block_row + i][block_col + j] for i in range (3) for j in range(3) if board[block_row + i][block_col + j] != 0]
+                block_val = [board[block_row + i][block_col + j] 
+                             for i in range (3) 
+                             for j in range(3)]
                 
                 # possible numbers = numbers one to 9 - used numbers
                 used_val = row_val + col_val + block_val
-                used_val = [i for n, i in enumerate(used_val) if i not in used_val[:n]]
-                numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-                for num in used_val:
-                    if num in numbers:
-                        numbers.remove(num)
-                side_board[row][col] = numbers
+                used_val = list(set(used_val))
+                numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                side_board[row][col] = [num 
+                                        for num in numbers 
+                                        if num not in used_val]
 
     return side_board
 
@@ -88,19 +91,18 @@ def hidden_single(board, side_board, steps, foutput):
 
     for row in range(9):
         for col in range(9):
-            if type(side_board[row][col]) == list:
-                if len(side_board[row][col]) == 1:
-                    steps = steps + 1
-                    side_board[row][col] = side_board[row][col][0]
-                    board[row][col] = side_board[row][col]
-                    print_table(steps, board, row, col, foutput)
+            if type(side_board[row][col]) == list and len(side_board[row][col]) == 1:
+                steps = steps + 1
+                side_board[row][col] = side_board[row][col][0]
+                board[row][col] = side_board[row][col]
+                print_table(steps, board, row, col, foutput)
 
-                    # update the side board after solving a cell
-                    side_board = insert_possible_num(board, side_board)
-    
-                    # compare the previous board with the new updated board
-                    if compare_side_board(side_board, temp_board) == False:
-                        hidden_single(board, side_board, steps, foutput)
+                # update the side board after solving a cell
+                side_board = insert_possible_num(board, side_board)
+
+                # compare the previous board with the new updated board
+                if compare_side_board(side_board, temp_board) == False:
+                    hidden_single(board, side_board, steps, foutput)
 
 def print_table(steps, board, row, col, foutput):
     heading = "Step " + str(steps) + " - " + str(board[row][col]) + " @ R" + str(row + 1) + "C" + str(col + 1)
